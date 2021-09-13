@@ -1,3 +1,4 @@
+from abc import abstractproperty
 import random
 import im_Card
 
@@ -19,10 +20,9 @@ for i in range(4):
 def select_card():
     random_number = random.randrange(len(card_list))
     get_card = card_list[random_number]
-    del(card_list[i])
+    del(card_list[random_number])
 
     return get_card
-
 #카드 보여주기()
 def show_card(my_list): 
     for i in range(len(my_list)):
@@ -31,7 +31,6 @@ def show_card(my_list):
         else:
             target = my_list[i].shape +" "+ my_list[i].name     #공개 상태의 카드는
             print(str(target))                              #그 값을 표시한다.
-
 def get_card(): 
     print("추가적으로 카드를 지급받겠습니까?")
     print("동의하신다면 Y키를 입력하십시오.")
@@ -47,35 +46,93 @@ def get_card():
         print("카드지급을 종료합니다.")
         return 'False'
 
-#카드의 값을 더하는 함수
-def sum_of_cards(list):
+def judge_winner(diller_sum, player_value):
+    #0은 딜러승리, 1은 플레이어 승리, 2는 무승부 의미
+    answer = 0
+    if diller_sum >21:
+        answer = 1
+    else:
+        diller_point = abs(diller_sum - 21)
+        player_value
+        if diller_point < player_value:
+            answer = 0
+        elif diller_point == player_value:
+            answer = 2
+        else:
+            answer = 1
+    return answer
+#카드의 값을 더하는 함수(딜러)
+def sum_of_diller_cards(list):
     answer = 0
     for i in range(len(list)):
         answer += list[i].value1
     
     return answer
 
+def make_binary_list(number):
+    square = 2 ** number
+    list_con_num = []
+    for i in range(square):
+        list_con_num.append(i)
+    binary_list = [str(bin(x))[2:].zfill(number) for x in list_con_num]
+
+    return binary_list
+def sum_of_player_cards(list):
+    count_list = len(list)
+    binary_list = make_binary_list(len(list))
+    answer_list = []
+    copy_answer_list = []
+
+    for i in range(len(binary_list)):
+        print(binary_list[i], end="=>")
+        sum = 0
+        for j in range(len(list)):
+            target = int(binary_list[i][j])
+            sum += list[j].value_list[target]
+        answer_list.append(sum)
+
+    for i in range(len(binary_list)):
+        copy_answer_list.append(abs(answer_list[i] - 21))
+    target = min(copy_answer_list)
+    return target
+        
+
+
+
+
+
 while True:
     print("*******게임*시작********")
     my_cards = []
     diller_cards = []
 
-
     #딜러가 카드를 먼저 받음
     diller_cards.append(     select_card()    )
     diller_cards.append(     select_card()    )
     diller_cards[0].open_card()
+    #딜러는 카드의 합이 17이 될때까지 
+    # 카드를 계속해서 지급받음
+    while True:
+        diller_sum = sum_of_diller_cards(diller_cards)       
+        if diller_sum >17:
+            break
+        else :
+            diller_cards.append(select_card())
+
+
     print("딜러의 카드 목록")
     show_card(diller_cards)
+
+
+
     #사용자
     #카드를 두 장 지급
+    print("**************************")
+    print("첫 카드 두장을 지급받습니다")
     my_cards.append(  select_card()  )
-
     my_cards.append(  select_card()  )
     
     #카드 공개
-    print("**************************")
-    print("첫 카드 두장을 지급받습니다")
     for i in range(len(my_cards)):
         my_cards[i].open_card()
     show_card(my_cards)    
@@ -88,10 +145,26 @@ while True:
             my_cards.append(target)
             show_card(my_cards)
 
+    player_sum = sum_of_player_cards(my_cards)
 
-
+    print("**************************")
     #딜러 카드를 모두 공개하고 승패를 판정함.
-    print(sum_of_cards(diller_cards))
+    for i in range(len(diller_cards)):
+        diller_cards[i].open_card()
+    show_card(diller_cards)
+
+
+    #0은 딜러승리, 1은 플레이어 승리, 2는 무승부 의미   
+    judged_number = judge_winner(diller_sum, player_sum)
+    if judged_number == 0:
+        print("딜러의 승리")
+    elif judged_number == 1:
+        print("플레이어의 승리")
+    else:
+        print("무승부")
+
+
+
     print("*****게임종료")
 
     
